@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CodeMind AI — Your intelligent coding assistant. Get answers, suggestions, and code improvements instantly." />
+  <title>CodeMind AI — Coding Assistant</title>
+  <!-- Apply saved theme before paint to avoid flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("codemind_theme_v1");
+        if (t === "light" || t === "dark") {
+          document.documentElement.setAttribute("data-theme", t);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+
+  <!-- Cursor glow (desktop) -->
+  <div id="cursor-glow" class="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Particle canvas (full page background) -->
+  <canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- Unified auth modal (login + signup tabs) -->
+  <div id="modal-auth" class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden>
+    <div class="auth-modal-backdrop" data-close-modal tabindex="-1" aria-hidden="true"></div>
+    <div class="auth-modal-card auth-card">
+      <button type="button" class="auth-modal-close" data-close-modal aria-label="Close dialog">&times;</button>
+
+      <header class="auth-card-header">
+        <div class="auth-card-logo" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="auth-lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f5d4"/>
+                <stop offset="100%" stop-color="#7b2cbf"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#auth-lg)" stroke-width="2"/>
+            <path d="M12 14h6v12h-6zM22 14h6v8h-6z" fill="url(#auth-lg)" opacity=".9"/>
+          </svg>
+        </div>
+        <h2 id="auth-title" class="auth-modal-title">Sign in</h2>
+        <p class="auth-modal-sub" id="auth-subtitle">Enter your username and password</p>
+      </header>
+
+      <div class="auth-panels">
+        <div id="panel-login" class="auth-panel is-active" role="tabpanel" aria-labelledby="tab-login">
+          <form id="form-login" class="auth-form" novalidate>
+            <label class="auth-field">
+              <span>Username</span>
+              <input type="text" name="username" id="login-username" required autocomplete="username" placeholder="Your username" />
+            </label>
+            <label class="auth-field">
+              <span>Password</span>
+              <input type="password" name="password" id="login-password" required autocomplete="current-password" minlength="8" placeholder="Min. 8 characters" />
+            </label>
+            <p class="auth-msg" id="login-msg" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-full">Sign in</button>
+            <p class="auth-footer-link">
+              Don&apos;t have an account?
+              <button type="button" class="link-like" id="link-show-signup">Create new account</button>
+            </p>
+          </form>
+        </div>
+
+        <div id="panel-signup" class="auth-panel" role="tabpanel" aria-labelledby="tab-signup" hidden>
+          <form id="form-signup" class="auth-form" novalidate>
+            <label class="auth-field">
+              <span>Username</span>
+              <input type="text" name="name" id="signup-name" required autocomplete="username" placeholder="Harjot" />
+            </label>
+            <label class="auth-field">
+              <span>Email</span>
+              <input type="email" name="email" id="signup-email" required autocomplete="email" placeholder="you@domain.dev" />
+            </label>
+            <label class="auth-field">
+              <span>Password</span>
+              <input type="password" name="password" id="signup-password" required autocomplete="new-password" minlength="8" placeholder="Min. 8 characters" />
+            </label>
+            <label class="auth-field">
+              <span>Confirm password</span>
+              <input type="password" name="confirm" id="signup-confirm" required autocomplete="new-password" minlength="8" placeholder="Repeat password" />
+            </label>
+            <p class="auth-msg" id="signup-msg" role="alert"></p>
+            <button type="submit" class="btn btn-primary btn-full">Create account</button>
+            <p class="auth-footer-link">
+              Already have an account?
+              <button type="button" class="link-like" id="link-show-login">Sign in</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="site-header" id="top">
+    <nav class="navbar container">
+      <a href="#top" class="logo" aria-label="CodeMind AI home">
+        <!-- Inline logo: replace src with your image if you add logo.png -->
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f5d4"/>
+                <stop offset="100%" stop-color="#7b2cbf"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#lg)" stroke-width="2"/>
+            <path d="M12 14h6v12h-6zM22 14h6v8h-6z" fill="url(#lg)" opacity=".9"/>
+            <circle cx="28" cy="26" r="3" fill="#00f5d4"/>
+          </svg>
+        </span>
+        <span class="logo-text">CodeMind<span class="logo-accent">AI</span></span>
+      </a>
+      <div class="navbar-end">
+        <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="nav-menu" id="nav-menu">
+          <ul class="nav-links" id="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="nav-cta-mobile"><a href="../Chatbot/index.html" data-codemind-chatbot-link data-chatbot-base="../Chatbot/index.html" class="btn btn-primary btn-nav-mobile">Try Assistant</a></li>
+          </ul>
+          <div class="nav-auth" id="nav-auth">
+            <div class="nav-auth-guest" id="nav-auth-guest">
+              <button type="button" class="btn btn-primary btn-nav-auth" id="btn-open-auth">Sign in</button>
+            </div>
+            <div class="nav-auth-user" id="nav-auth-user" hidden>
+              <div class="nav-profile-wrap" id="nav-profile-wrap">
+                <button
+                  type="button"
+                  class="nav-profile-trigger"
+                  id="nav-profile-trigger"
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  aria-controls="profile-dropdown"
+                >
+                  <span class="nav-avatar" id="nav-avatar" aria-hidden="true">?</span>
+                  <span class="nav-user-name" id="nav-user-label">User</span>
+                  <span class="nav-profile-chevron" aria-hidden="true"></span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown">
+                  <div class="profile-dropdown-head">
+                    <span class="profile-dropdown-avatar" id="profile-avatar" aria-hidden="true">?</span>
+                    <div class="profile-dropdown-meta">
+                      <strong id="profile-name">User</strong>
+                      <span id="profile-email">you@example.com</span>
+                    </div>
+                  </div>
+                  <div class="profile-dropdown-actions">
+                    <button type="button" class="profile-action" id="btn-theme-toggle">
+                      <span class="profile-action-icon" id="theme-toggle-icon" aria-hidden="true">☀</span>
+                      <span id="theme-toggle-label">Light mode</span>
+                    </button>
+                    <button type="button" class="profile-action profile-action--logout" id="btn-logout">Log out</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="../Chatbot/index.html" data-codemind-chatbot-link data-chatbot-base="../Chatbot/index.html" class="btn btn-nav">Try Assistant</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero section" id="hero">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <p class="eyebrow animate-in">AI for developers</p>
+          <h1 class="hero-title">
+            <span class="line">Code smarter.</span>
+            <span class="line gradient-text">Ship faster.</span>
+          </h1>
+          <p class="hero-sub">
+            Ask anything about your stack—debugging, refactors, architecture—and get precise answers with actionable code suggestions tailored to your project.
+          </p>
+          <div class="hero-cta">
+            <a href="#contact" class="btn btn-primary">Get early access</a>
+            <a href="#features" class="btn btn-ghost">Explore features</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat">
+              <span class="stat-num" data-count="50">50</span><span class="stat-suffix">+</span>
+              <span class="stat-label">Languages</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" data-count="24">24</span><span class="stat-suffix">/7</span>
+              <span class="stat-label">Availability</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num" data-count="99">99</span><span class="stat-suffix">%</span>
+              <span class="stat-label">Uptime goal</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="code-window tilt-card" data-tilt>
+            <div class="code-header">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="code-title">assistant.ts</span>
+            </div>
+            <pre class="code-body"><code><span class="kw">async function</span> <span class="fn">fixBug</span>(issue: <span class="type">Issue</span>) {
+  <span class="kw">const</span> hint = <span class="kw">await</span> codemind.<span class="fn">analyze</span>(issue);
+  <span class="kw">return</span> hint.<span class="fn">suggestPatch</span>();
+}</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="hero-scroll-hint">
+        <span>Scroll</span>
+        <span class="scroll-line"></span>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section features" id="features">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Capabilities</p>
+          <h2 class="section-title">Built for real engineering workflows</h2>
+          <p class="section-desc">From quick syntax checks to deep architectural guidance—everything stays in one dark, focused workspace.</p>
+        </header>
+        <div class="feature-grid">
+          <article class="feature-card tilt-card" data-tilt>
+            <div class="feature-icon">⚡</div>
+            <h3>Instant answers</h3>
+            <p>Natural-language queries about APIs, frameworks, and patterns—answered with context-aware explanations.</p>
+          </article>
+          <article class="feature-card tilt-card" data-tilt>
+            <div class="feature-icon">◈</div>
+            <h3>Code suggestions</h3>
+            <p>Receive refactors, security fixes, and style improvements as copy-ready snippets you can paste into your editor.</p>
+          </article>
+          <article class="feature-card tilt-card" data-tilt>
+            <div class="feature-icon">⎘</div>
+            <h3>Multi-language</h3>
+            <p>JavaScript, Python, Rust, Go, and more—switch stacks without switching tools.</p>
+          </article>
+          <article class="feature-card tilt-card" data-tilt>
+            <div class="feature-icon">◎</div>
+            <h3>Project memory</h3>
+            <p>Optional session context so follow-up questions feel continuous, not repetitive.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="section about" id="about">
+      <div class="container about-grid">
+        <div class="about-copy">
+          <p class="eyebrow">About CodeMind</p>
+          <h2 class="section-title">Your pair programmer, powered by modern AI</h2>
+          <p>We combine retrieval-augmented knowledge with careful prompting so you get fewer hallucinations and more runnable code. Whether you are learning a new framework or shipping a hotfix at 2 a.m., CodeMind keeps the conversation technical and practical.</p>
+          <ul class="about-list">
+            <li>Explains trade-offs, not just “the answer”</li>
+            <li>Respects your indentation and naming style</li>
+            <li>Privacy-first: no training on your snippets without consent</li>
+          </ul>
+        </div>
+        <div class="about-panel">
+          <div class="about-glow"></div>
+          <div class="about-metrics">
+            <div class="metric">
+              <span class="metric-value">10M+</span>
+              <span class="metric-label">Tokens processed (demo)</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">&lt;300ms</span>
+              <span class="metric-label">Typical first token</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">SOC2</span>
+              <span class="metric-label">Roadmap alignment</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive: Three.js + tilt cards -->
+    <section class="section experience" id="experience">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Immersive</p>
+          <h2 class="section-title">See the stack in motion</h2>
+          <p class="section-desc">A live 3D accent and layered glass panels—best experienced on desktop; we fall back gracefully on mobile.</p>
+        </header>
+        <div class="experience-layout">
+          <div id="three-container" class="three-container">
+            <!-- Three.js renders here -->
+          </div>
+          <div class="experience-side">
+            <div class="glass-card tilt-card" data-tilt>
+              <h3>Interactive layer</h3>
+              <p>Move your cursor over cards to see tilt and glow. The mesh reacts to time—subtle motion without stealing focus from your code.</p>
+            </div>
+            <div class="glass-card tilt-card" data-tilt>
+              <h3>Performance first</h3>
+              <p>Animations use <code>requestAnimationFrame</code> and GPU-friendly transforms. If WebGL is unavailable, you still get particles and CSS motion.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact">
+      <div class="container contact-grid">
+        <div class="contact-intro">
+          <p class="eyebrow">Contact</p>
+          <h2 class="section-title">Join the waitlist</h2>
+          <p>Tell us what you build—we will reach out with beta access and integration guides for VS Code and the terminal.</p>
+        </div>
+        <form class="contact-form" id="contact-form" novalidate>
+          <label class="field">
+            <span>Name</span>
+            <input type="text" name="name" id="name" placeholder="Ada Lovelace" required autocomplete="name" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" id="email" placeholder="you@domain.dev" required autocomplete="email" />
+          </label>
+          <label class="field field-full">
+            <span>Message</span>
+            <textarea name="message" id="message" rows="4" placeholder="What languages and tools do you use?" required></textarea>
+          </label>
+          <button type="submit" class="btn btn-primary btn-full">Send message</button>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="logo logo-footer">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00f5d4"/>
+                  <stop offset="100%" stop-color="#7b2cbf"/>
+                </linearGradient>
+              </defs>
+              <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#lg2)" stroke-width="2"/>
+              <path d="M12 14h6v12h-6zM22 14h6v8h-6z" fill="url(#lg2)" opacity=".9"/>
+              <circle cx="28" cy="26" r="3" fill="#00f5d4"/>
+            </svg>
+          </span>
+          <span class="logo-text">CodeMind<span class="logo-accent">AI</span></span>
+        </a>
+        <p class="footer-tagline">Answers for coders. Suggestions you can ship.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#experience">Experience</a>
+        <a href="#contact">Waitlist</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#about">About</a>
+        <a href="#">Careers</a>
+        <a href="#">Blog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+    <div class="footer-bottom container">
+      <p>© <span id="year"></span> CodeMind AI. Demo landing page.</p>
+    </div>
+  </footer>
+
+  <!-- Floating chatbot UI -->
+  <div class="chat-widget" id="chat-panel">
+    <button type="button" class="chat-fab" id="chat-fab" aria-expanded="false" aria-controls="chat-window" title="Open assistant">
+      <span class="chat-fab-icon" aria-hidden="true">💬</span>
+    </button>
+    <div class="chat-window" id="chat-window" hidden>
+      <div class="chat-header">
+        <span>CodeMind Assistant</span>
+        <button type="button" class="chat-close" id="chat-close" aria-label="Close chat">×</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-bubble bot">Hi! Ask about code, attach an image or file (📎), and I will reply with Gemini.</div>
+      </div>
+      <form class="chat-form" id="chat-form">
+        <input type="file" id="chat-file" class="chat-file-input" accept="image/*,.txt,.py,.js,.ts,.jsx,.tsx,.html,.css,.json,.md,.xml,.yaml,.yml,.c,.cpp,.h,.java,.go,.rs,.php,.rb,.cs,.swift,.kt,.sql,.sh,.ps1,.env" tabindex="-1" aria-hidden="true" />
+        <button type="button" class="chat-attach-btn" id="chat-attach" title="Attach file" aria-label="Attach file">📎</button>
+        <input type="text" id="chat-input" placeholder="Ask anything..." autocomplete="off" />
+        <button type="submit" class="btn btn-primary btn-chat">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- GSAP + Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+  <script src="../shared/codemind-auth.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeMind Ai</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("codemind_theme_v1");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <meta
+      name="description"
+      content="CodeMind Ai - modern chatbot interface inspired by Copilot."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <div class="bg-animated" aria-hidden="true"></div>
+
+    <div id="modal-auth" class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" hidden>
+    <div class="auth-modal-backdrop" data-close-modal tabindex="-1" aria-hidden="true"></div>
+    <div class="auth-modal-card auth-card">
+      <button type="button" class="auth-modal-close" data-close-modal aria-label="Close dialog">&times;</button>
+
+      <header class="auth-card-header">
+        <div class="auth-card-logo" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="auth-lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f5d4"/>
+                <stop offset="100%" stop-color="#7b2cbf"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#auth-lg)" stroke-width="2"/>
+            <path d="M12 14h6v12h-6zM22 14h6v8h-6z" fill="url(#auth-lg)" opacity=".9"/>
+          </svg>
+        </div>
+        <h2 id="auth-title" class="auth-modal-title">Sign in</h2>
+        <p class="auth-modal-sub" id="auth-subtitle">Enter your username and password</p>
+      </header>
+
+      <div class="auth-panels">
+        <div id="panel-login" class="auth-panel is-active" role="tabpanel" aria-labelledby="tab-login">
+          <form id="form-login" class="auth-form" novalidate>
+            <label class="auth-field">
+              <span>Username</span>
+              <input type="text" name="username" id="login-username" required autocomplete="username" placeholder="Your username" />
+            </label>
+            <label class="auth-field">
+              <span>Password</span>
+              <input type="password" name="password" id="login-password" required autocomplete="current-password" minlength="8" placeholder="Min. 8 characters" />
+            </label>
+            <p class="auth-msg" id="login-msg" role="alert"></p>
+            <button type="submit" class="btn-auth-submit">Sign in</button>
+            <p class="auth-footer-link">
+              Don&apos;t have an account?
+              <button type="button" class="link-like" id="link-show-signup">Create new account</button>
+            </p>
+          </form>
+        </div>
+
+        <div id="panel-signup" class="auth-panel" role="tabpanel" aria-labelledby="tab-signup" hidden>
+          <form id="form-signup" class="auth-form" novalidate>
+            <label class="auth-field">
+              <span>Username</span>
+              <input type="text" name="name" id="signup-name" required autocomplete="username" placeholder="Harjot" />
+            </label>
+            <label class="auth-field">
+              <span>Email</span>
+              <input type="email" name="email" id="signup-email" required autocomplete="email" placeholder="you@domain.dev" />
+            </label>
+            <label class="auth-field">
+              <span>Password</span>
+              <input type="password" name="password" id="signup-password" required autocomplete="new-password" minlength="8" placeholder="Min. 8 characters" />
+            </label>
+            <label class="auth-field">
+              <span>Confirm password</span>
+              <input type="password" name="confirm" id="signup-confirm" required autocomplete="new-password" minlength="8" placeholder="Repeat password" />
+            </label>
+            <p class="auth-msg" id="signup-msg" role="alert"></p>
+            <button type="submit" class="btn-auth-submit">Create account</button>
+            <p class="auth-footer-link">
+              Already have an account?
+              <button type="button" class="link-like" id="link-show-login">Sign in</button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div>
+          <div class="brand">
+            <a href="../website/index.html" data-codemind-website-link data-website-base="../website/index.html" class="logo" aria-label="CodeMind AI home">
+              <span class="logo-mark" aria-hidden="true">
+                <svg
+                  viewBox="0 0 40 40"
+                  width="40"
+                  height="40"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#00f5d4" />
+                      <stop offset="100%" stop-color="#7b2cbf" />
+                    </linearGradient>
+                  </defs>
+                  <rect
+                    x="2"
+                    y="2"
+                    width="36"
+                    height="36"
+                    rx="8"
+                    stroke="url(#lg)"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M12 14h6v12h-6zM22 14h6v8h-6z"
+                    fill="url(#lg)"
+                    opacity=".9"
+                  />
+                  <circle cx="28" cy="26" r="3" fill="#00f5d4" />
+                </svg>
+              </span>
+              <span class="logo-text"
+                >CodeMind<span class="logo-accent">AI</span></span
+              >
+            </a>
+          </div>
+
+          <div class="sidebar-actions" aria-label="Chat actions">
+            <button id="newChatBtn" class="side-btn primary" type="button">
+              <span class="side-ic" aria-hidden="true">+</span>
+              New Chat
+            </button>
+            <button id="searchBtn" class="side-btn" type="button">
+              <span class="side-ic" aria-hidden="true">⌕</span>
+              Search
+            </button>
+            <button id="historyBtn" class="side-btn" type="button">
+              <span class="side-ic" aria-hidden="true">🕘</span>
+              History
+            </button>
+          </div>
+
+          <div id="searchPanel" class="side-panel hidden" aria-label="Search chats">
+            <label class="side-label" for="searchInput">Search in this chat</label>
+            <input
+              id="searchInput"
+              class="side-input"
+              type="text"
+              placeholder="Search messages…"
+              autocomplete="off"
+            />
+            <p class="side-help" id="searchMeta">Type to highlight matches.</p>
+          </div>
+
+          <div id="historyPanel" class="side-panel hidden" aria-label="Chat history">
+            <p class="side-label">Recent chats</p>
+            <div id="historyList" class="history-list"></div>
+          </div>
+        </div>
+
+
+        <div class="sidebar-auth">
+          <div class="sidebar-auth-guest nav-auth-guest" id="nav-auth-guest">
+            <button type="button" class="side-btn primary" id="btn-open-auth">Sign in</button>
+          </div>
+          <div class="nav-auth-user" id="nav-auth-user" hidden>
+            <div class="nav-profile-wrap" id="nav-profile-wrap">
+              <button type="button" class="nav-profile-trigger" id="nav-profile-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="profile-dropdown">
+                <span class="nav-avatar" id="nav-avatar">?</span>
+                <span class="nav-user-name" id="nav-user-label">User</span>
+              </button>
+              <div class="profile-dropdown" id="profile-dropdown">
+                <div class="profile-dropdown-head">
+                  <span class="profile-dropdown-avatar" id="profile-avatar">?</span>
+                  <div class="profile-dropdown-meta">
+                    <strong id="profile-name">User</strong>
+                    <span id="profile-email">email</span>
+                  </div>
+                </div>
+                <div class="profile-dropdown-actions">
+                  <button type="button" class="profile-action" id="btn-theme-toggle">
+                    <span class="profile-action-icon" id="theme-toggle-icon" aria-hidden="true">&#9728;</span>
+                    <span id="theme-toggle-label">Light mode</span>
+                  </button>
+                  <button type="button" class="profile-action profile-action--logout" id="btn-logout">Log out</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="chat-stage">
+        <header class="chat-header">
+          <button id="menuBtn" class="menu-btn" type="button" aria-label="Toggle sidebar">
+            ☰
+          </button>
+          <h2>CodeMind Ai</h2>
+          <span class="status">Online</span>
+        </header>
+
+        <section id="chatHistory" class="chat-history" aria-live="polite"></section>
+
+        <div id="typingIndicator" class="typing-wrap hidden" aria-hidden="true">
+          <div class="typing-bubble">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <form id="chatForm" class="chat-input-wrap">
+          <div id="attachPreview" class="attach-preview hidden" aria-live="polite"></div>
+          <input id="fileInput" type="file" class="file-input" multiple />
+          <input
+            id="imageInput"
+            type="file"
+            class="file-input"
+            multiple
+            accept="image/*"
+          />
+          <button id="attachBtn" class="attach-btn" type="button" aria-label="Attach files">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M21 11.5V15a6 6 0 0 1-12 0V7a4 4 0 0 1 8 0v8a2 2 0 0 1-4 0V8.5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            id="attachImgBtn"
+            class="attach-btn attach-btn--img"
+            type="button"
+            aria-label="Attach images"
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M8 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+                fill="currentColor"
+              />
+              <path
+                d="M21 16l-5.2-5.2a1 1 0 0 0-1.4 0L6 19"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <div class="chat-input-field" id="chatInputField">
+            <div
+              class="chat-input-recording"
+              id="chatInputRecording"
+              hidden
+              aria-hidden="true"
+            >
+              <svg
+                class="recording-wave"
+                viewBox="0 0 64 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <rect class="recording-bar" x="4" y="8" width="5" height="8" rx="2.5" fill="currentColor" />
+                <rect class="recording-bar" x="14" y="4" width="5" height="16" rx="2.5" fill="currentColor" />
+                <rect class="recording-bar" x="24" y="6" width="5" height="12" rx="2.5" fill="currentColor" />
+                <rect class="recording-bar" x="34" y="2" width="5" height="20" rx="2.5" fill="currentColor" />
+                <rect class="recording-bar" x="44" y="5" width="5" height="14" rx="2.5" fill="currentColor" />
+                <rect class="recording-bar" x="54" y="7" width="5" height="10" rx="2.5" fill="currentColor" />
+              </svg>
+              <span class="recording-label">Listening…</span>
+            </div>
+            <input
+              id="chatInput"
+              type="text"
+              autocomplete="off"
+              placeholder="Ask anything…"
+              aria-label="Type your message"
+            />
+          </div>
+          <button
+            id="voiceBtn"
+            class="voice-btn"
+            type="button"
+            aria-label="Start voice input"
+            aria-pressed="false"
+          >
+            <svg
+              class="voice-btn-icon voice-btn-icon--mic"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M19 11v1a7 7 0 0 1-14 0v-1"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M12 18v3"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path
+                d="M8 21h8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <svg
+              class="voice-btn-icon voice-btn-icon--pause"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+              hidden
+            >
+              <rect x="6" y="6" width="5" height="12" rx="1" fill="currentColor" />
+              <rect x="13" y="6" width="5" height="12" rx="1" fill="currentColor" />
+            </svg>
+          </button>
+          <button class="send-btn" type="submit" aria-label="Send message">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M21 3L10 14"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M21 3L14 21L10 14L3 10L21 3Z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </form>
+      </main>
+    </div>
+
+    <script src="../shared/codemind-auth.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
